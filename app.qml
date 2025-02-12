@@ -4,12 +4,12 @@ import QtQuick.Controls.Basic
 ApplicationWindow {
     id: window
 
-    property int workTime
-    property int restTime
-    property int settingsShowTime
-    property int settingsShowPercents
-    property QtObject changeSettings
-    property QtObject startTimer
+    property int work_time
+    property int rest_time
+    property int is_show_time
+    property int is_show_percents
+    property QtObject time_settings
+    property QtObject workflow_service
 
     visible: true
     width: 600
@@ -48,7 +48,7 @@ ApplicationWindow {
             width: 50
             height: 32
             font.pixelSize: 18
-            placeholderText: workTime
+            placeholderText: work_time
         }
         Text {
             x: 188
@@ -62,7 +62,7 @@ ApplicationWindow {
             y: 2
             width: 70
             height: 36
-            onClicked: changeSettings.workTime(work_time_field.text)
+            onClicked: time_settings.work_time(work_time_field.text)
 
             contentItem: Text {
                 text: "SET"
@@ -97,7 +97,7 @@ ApplicationWindow {
             width: 50
             height: 32
             font.pixelSize: 18
-            placeholderText: restTime
+            placeholderText: rest_time
         }
         Text {
             x: 188
@@ -111,7 +111,7 @@ ApplicationWindow {
             y: 2
             width: 70
             height: 36
-            onClicked: changeSettings.restTime(rest_time_field.text)
+            onClicked: time_settings.rest_time(rest_time_field.text)
 
             contentItem: Text {
                 text: "SET"
@@ -133,8 +133,8 @@ ApplicationWindow {
         x: 370
         CheckBox {
             id: checkbox_time
-            checked: settingsShowTime
-            onClicked: changeSettings.checkboxTime(checkbox_time.checked)
+            checked: is_show_time
+            onClicked: time_settings.time_checkbox(checkbox_time.checked)
         }
         Text {
             x: 50
@@ -146,8 +146,8 @@ ApplicationWindow {
         CheckBox {
             id: checkbox_percents
             y: 40
-            checked: settingsShowPercents
-            onClicked: changeSettings.checkboxPercents(checkbox_percents.checked)
+            checked: is_show_percents
+            onClicked: time_settings.time_checkbox(checkbox_percents.checked)
         }
         Text {
             x: 50
@@ -169,7 +169,7 @@ ApplicationWindow {
             anchors.centerIn: parent
             width: 200
             height: 40
-            onClicked: startTimer.startWork()
+            onClicked: workflow_service.startWork()
 
             contentItem: Text {
                 text: "START SESSION"

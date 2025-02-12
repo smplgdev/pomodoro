@@ -1,90 +1,52 @@
-import sys, os, time, subprocess, multiprocessing
-
-
-from win11toast import toast
+import sys
 
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtQuick import QQuickWindow
 from PyQt6.QtCore import QObject, pyqtSlot as Slot
 
-with open('config.txt') as file:
-    config = file.readlines()
-    work_time = config[1]
-    rest_time = config[2]
-    settings_show_time = config[3]
-    settings_show_percents = config[4]
+from config_reader import config
 
-def changeConfig(arg, line):
-    config[line] = arg + '\n'
-    with open('config.txt', 'w') as file:
-        file.writelines(config)
+class TimeSettings(QObject):
+    @Slot(int)
+    def work_time(self, value):
+        if value > 0:
+            config.update_value("work_time", int(value))
 
-def trueFalse(val):
-    if (val == 'true'):
-        return '1'
-    elif (val == 'false'):
-        return '0'
+    @Slot(int)
+    def rest_time(self, value):
+        if value > 0:
+            config.update_value("rest_time", int(value))
 
-subp = [0,0]
-def killSubprocesses(n):
-    if (subp[n] != 0):
-        subp[n].kill()
-        subp[n] = 0
-
-class changeSettings(QObject):
-    @Slot(str)
-    def workTime(self, min):
-        if (int(min) > 0):
-            changeConfig(min, 1)
-        else:
-            return True
-    @Slot(str)
-    def restTime(self, min):
-        if (int(min) > 0):
-            changeConfig(min, 2)
-        else:
-            return True
-    @Slot(str)
-    def checkboxTime(self, val):
-        changeConfig(trueFalse(val), 3)
-    @Slot(str)
-    def checkboxPercents(self, val):
-        changeConfig(trueFalse(val), 4)
-
-class startTimer(QObject):
+class WorkflowService(QObject):
     @Slot()
     def startWork(self):
         print('Start work')
-        killSubprocesses(1)
-        changeConfig('w', 0)
-        subp[0] = subprocess.Popen(["python", './pomodoro.py'])
-        time.sleep(int(work_time)*60)
-        toast('⌛ Work is over. Relax ;)', duration='long', on_click=lambda args: self.startRest())
+        pass
 
     def startRest(self):
         print('Start rest')
-        killSubprocesses(0)
-        changeConfig('r', 0)
-        subp[1] = subprocess.Popen(["python", './pomodoro.py'])
-        time.sleep(int(rest_time)*60)
-        toast('⌛ Rest is over. Time to work!', duration='long', on_click=lambda args: self.startWork())
+        pass
 
 
-change_settings = changeSettings()
-start_timer = startTimer()
+def main():
+    time_settings = TimeSettings()
+    workflow_service = WorkflowService()
 
-QQuickWindow.setSceneGraphBackend('software')
-app = QGuiApplication(sys.argv)
-engine = QQmlApplicationEngine()
-engine.quit.connect(app.quit)
-engine.load('./app.qml')
-obj = engine.rootObjects()[0]
-obj.setProperty('workTime', work_time)
-obj.setProperty('restTime', rest_time)
-obj.setProperty('settingsShowPercents', settings_show_percents)
-obj.setProperty('settingsShowTime', settings_show_time)
-obj.setProperty('changeSettings', change_settings)
-obj.setProperty('startTimer', start_timer)
-sys.exit(app.exec())
+    QQuickWindow.setSceneGraphBackend('software')
+    app = QGuiApplication(sys.argv)
+    engine = QQmlApplicationEngine()
+    engine.quit.connect(app.quit)
+    engine.load('./app.qml')
+    obj = engine.rootObjects()[0]
+    obj.setProperty('work_time', config.work_time)
+    obj.setProperty('rest_time', config.rest_time)
+    obj.setProperty('is_show_percents', config.is_show_percents)
+    obj.setProperty('is_show_time', config.is_show_time)
+    obj.setProperty('time_settings', time_settings)
+    obj.setProperty('workflow_service', workflow_service)
+    sys.exit(app.exec())
 
+
+if __name__ == '__main__':
+    main()
