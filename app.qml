@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
+import QtMultimedia
 
 ApplicationWindow {
     id: window
@@ -9,6 +10,10 @@ ApplicationWindow {
     property QtObject settings_service
     property QtObject workflow_service
 
+    property color backgroundColor: "#282828"
+    property color white: "#ffffff"
+    property color red: "#ff0000"
+
     property int remainingTime: work_time_seconds
 
     // State: true = Work Mode, false = Rest Mode
@@ -16,10 +21,10 @@ ApplicationWindow {
 
     visible: true
     width: 600
-    height: 450
+    height: 500
     title: "Pomodoro Timer"
 
-    color: '#282828'
+    color: backgroundColor
 
     Rectangle {
         width: window.width
@@ -52,7 +57,7 @@ ApplicationWindow {
                 id: mode_display
                 text: isWorkMode ? "Work Time" : "Rest Time"
                 font.pixelSize: 20
-                color: "white"
+                color: white
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
@@ -61,7 +66,21 @@ ApplicationWindow {
                 id: timer_display
                 text: formatTime(remainingTime)
                 font.pixelSize: 32
-                color: "white"
+                color: {
+                    if (isWorkMode) {
+                        if (remainingTime < Math.floor(work_time_seconds * 0.1)) {
+                            "red"
+                        } else {
+                            "white"
+                        }
+                    } else {
+                        if (remainingTime < Math.floor(rest_time_seconds * 0.1)) {
+                            "red"
+                        } else {
+                            "white"
+                        }
+                    }
+                }
 
                 anchors.horizontalCenter: parent.horizontalCenter
             }
@@ -223,6 +242,7 @@ ApplicationWindow {
             if (remainingTime > 0) {
                 remainingTime--;  
             } else {
+                playSound();
                 switchMode();
             }
         }
@@ -231,6 +251,16 @@ ApplicationWindow {
             running = false; // Stop current timer
             remainingTime = work_time_seconds; // Reset to the new work time value
         }
+    }
+
+    function playSound() {
+        timerFinishSound.play();
+    }
+
+    SoundEffect {
+        id: timerFinishSound
+        source: "./sounds/timer.wav"  // Replace with your sound file path
+        volume: 1.0
     }
 
     function switchMode() {
