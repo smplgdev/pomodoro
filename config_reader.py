@@ -1,6 +1,6 @@
 import json
 from typing import Any
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class Config(BaseModel):
@@ -10,10 +10,18 @@ class Config(BaseModel):
 
     work_time: int
     rest_time: int
-    is_show_time: bool
-    is_show_percents: bool
-
+    
     file_path: str
+
+    @computed_field
+    @property
+    def work_time_seconds(self) -> int:
+        return self.work_time * 60
+    
+    @computed_field
+    @property
+    def rest_time_seconds(self) -> int:
+        return self.rest_time * 60
 
     @classmethod
     def read_config(cls, file_path: str) -> "Config":
